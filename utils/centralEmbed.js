@@ -180,7 +180,7 @@ class CentralEmbedHandler {
                     .setAuthor({ 
                         name: `${trackInfo.title}`, 
                         iconURL: 'https://cdn.discordapp.com/emojis/896724352949706762.gif',
-                        url: 'https://discord.gg/xQF9f9yUEM' 
+                        url: 'https://discord.gg/YABAKcjJhC' 
                     })
                     .setDescription([
                         `**🎤 Artist:** ${trackInfo.author}`,
@@ -213,7 +213,7 @@ class CentralEmbedHandler {
             } else {
                
                 embed = new EmbedBuilder()
-                .setAuthor({ name: 'INFINITY MUSIC Control Center', iconURL: 'https://cdn.discordapp.com/emojis/896724352949706762.gif', url: 'https://discord.gg/xQF9f9yUEM' })
+                .setAuthor({ name: 'INFINITY MUSIC Control Center', iconURL: 'https://cdn.discordapp.com/emojis/896724352949706762.gif', url: 'https://discord.gg/YABAKcjJhC' })
                 .setDescription([
                     '',
                     '- Simply type a **song name** or **YouTube link** to start the party!',
@@ -354,5 +354,6 @@ class CentralEmbedHandler {
 }
 
 module.exports = CentralEmbedHandler;
+
 
 
