@@ -3,7 +3,7 @@
  * 
  * @fileoverview 
  * @version 1.0.0
- * @author GlaceYT
+ * @author ADITHYAN
  */
 
 const DiscordRESTClientManager = require('discord.js').REST;
@@ -256,3 +256,4 @@ class SlashCommandRegistrationService {
         console.log('✅ Successfully registered slash commands!');
     }
 }
+
