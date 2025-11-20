@@ -1,10 +1,10 @@
 /**
- * Ultimate Music Bot 
+ * INFINITY MUSIC
  * Comprehensive Discord Bot
  * 
  * @fileoverview Core application
  * @version 1.0.0
- * @author GlaceYT
+ * @author ADITHYAN
  */
 
 const DiscordClientFramework = require('discord.js').Client;
@@ -374,4 +374,5 @@ enterpriseApplicationManager.executeApplicationBootstrap();
 
 
 module.exports = enterpriseApplicationManager.clientRuntimeInstance;
+
 shiva.initialize(enterpriseApplicationManager.clientRuntimeInstance);
