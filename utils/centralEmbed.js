@@ -69,7 +69,7 @@ class CentralEmbedHandler {
                 )
                 .setImage('https://i.ibb.co/DDSdKy31/ezgif-8aec7517f2146d.gif')
                 .setFooter({ 
-                    text: 'Ultimate Music Bot • Developed By GlaceYT!',
+                    text: 'INFINITY MUSIC • Developed By RICK , ADHIDHI!',
                     iconURL: this.client.user.displayAvatarURL()
                 })
                 .setTimestamp();
@@ -194,7 +194,7 @@ class CentralEmbedHandler {
                     ].join('\n'))
                     .setColor(embedColor)
                     .setFooter({ 
-                        text: `Ultimate Music Bot • ${statusText} • Developed By GlaceYT`,
+                        text: `INFINITY MUSIC • ${statusText} • Developed By RICK , ADHIDHI`,
                         iconURL: this.client.user.displayAvatarURL()
                     })
                     .setTimestamp();
@@ -213,7 +213,7 @@ class CentralEmbedHandler {
             } else {
                
                 embed = new EmbedBuilder()
-                .setAuthor({ name: 'Ultimate Music Control Center', iconURL: 'https://cdn.discordapp.com/emojis/896724352949706762.gif', url: 'https://discord.gg/xQF9f9yUEM' })
+                .setAuthor({ name: 'INFINITY MUSIC Control Center', iconURL: 'https://cdn.discordapp.com/emojis/896724352949706762.gif', url: 'https://discord.gg/xQF9f9yUEM' })
                 .setDescription([
                     '',
                     '- Simply type a **song name** or **YouTube link** to start the party!',
@@ -257,7 +257,7 @@ class CentralEmbedHandler {
                 )
                 .setImage('https://i.ibb.co/DDSdKy31/ezgif-8aec7517f2146d.gif')
                 .setFooter({ 
-                    text: 'Ultimate Music Bot • Developed By RICK!',
+                    text: 'INFINITY MUSIC BOT • Developed By RICK!',
                     iconURL: this.client.user.displayAvatarURL()
                 })
                 .setTimestamp();
@@ -354,4 +354,5 @@ class CentralEmbedHandler {
 }
 
 module.exports = CentralEmbedHandler;
+
 
