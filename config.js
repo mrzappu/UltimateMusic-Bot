@@ -1,7 +1,6 @@
 /**
  * INFINITY MUSIC
- * 
- * @fileoverview 
+ * * @fileoverview 
  * @module ConfigurationManager
  * @version 1.0.0
  * @author ADITHYAN
@@ -33,7 +32,7 @@ class EnterpriseConfigurationManager {
                 host: EnvironmentVariableProcessor.LAVALINK_HOST || "zac.hidencloud.com", 
                 port: EnvironmentVariableProcessor.LAVALINK_PORT || 24627,       
                 password: EnvironmentVariableProcessor.LAVALINK_PASSWORD || "Kaun.Yuvraj", 
-                secure: EnvironmentVariableProcessor.LAVALINK_SECURE === 'false' || true
+                secure: EnvironmentVariableProcessor.LAVALINK_SECURE === 'true' || false
             },           
             
             /**
@@ -70,8 +69,7 @@ const primaryApplicationConfiguration = enterpriseConfigurationInstance.initiali
 
 /**
  * Export configuration for application-wide utilization
- * 
- * @type {Object} Comprehensive application configuration object
+ * * @type {Object} Comprehensive application configuration object
  */
 module.exports = primaryApplicationConfiguration;
 
@@ -79,25 +77,21 @@ module.exports = primaryApplicationConfiguration;
  * =========================================
  * 📚 CONFIGURATION GUIDE FOR USERS
  * =========================================
- * 
- * 🔑 REQUIRED SETUP (YOU MUST DO THESE):
+ * * 🔑 REQUIRED SETUP (YOU MUST DO THESE):
  * 1. Add your Discord bot token to "discord.token"
  * 2. Add your MongoDB connection URI to "mongodb.uri" 
  * 3. Add your Discord user ID to "bot.ownerIds" array
- * 
- * 🎛️ OPTIONAL CUSTOMIZATION:
+ * * 🎛️ OPTIONAL CUSTOMIZATION:
  * - Change bot prefix in "bot.prefix"
  * - Modify embed color in "bot.embedColor" 
  * - Update support server link in "bot.supportServer"
  * - Toggle features on/off in the "features" section
- * 
- * 🌍 ENVIRONMENT VARIABLES (RECOMMENDED):
+ * * 🌍 ENVIRONMENT VARIABLES (RECOMMENDED):
  * Instead of editing this file, you can use .env file:
  * TOKEN=your_bot_token_here
  * MONGODB_URI=your_mongodb_uri_here
  * BOT_PREFIX=!
- * 
- * ⚠️ SECURITY WARNING:
+ * * ⚠️ SECURITY WARNING:
  * Never share your bot token or database URI publicly!
  * Use environment variables in production!
  */
