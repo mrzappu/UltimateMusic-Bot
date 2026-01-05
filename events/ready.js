@@ -1,8 +1,3 @@
-/**
- * Discord Client Ready Event Handler
- * Fixes: "Player creation error"
- */
-
 const { REST, Routes, Events } = require('discord.js');
 const config = require('../config');
 const fs = require('fs');
@@ -10,60 +5,46 @@ const path = require('path');
 const CentralEmbedHandler = require('../utils/centralEmbed');
 
 module.exports = {
-    name: Events.ClientReady, // Uses the official Enum string 'clientReady'
+    // Using Events.ClientReady (clientReady) is standard for v14+
+    name: Events.ClientReady, 
     once: true,
     
     async execute(client) {
-        console.log(`🚀 Authorized as ${client.user.tag}`);
-
-        // --- MANDATORY HANDSHAKE ---
-        // This MUST happen inside the ClientReady event.
+        // --- THE FINAL FIX ---
+        // We MUST initialize Riffy immediately here.
         if (client.riffy) {
             try {
-                // Initialize Riffy with the Bot's ID
                 client.riffy.init(client.user.id);
-                console.log('✅ Riffy Audio Engine: Handshake Complete');
+                console.log('✅ Riffy Handshake: Success');
             } catch (error) {
-                // Bypass the descriptor crash but log other errors
+                // Ignore descriptor errors
                 if (!error.message.includes('descriptor')) {
-                    console.error('❌ Riffy Handshake Failed:', error.message);
+                    console.error('❌ Riffy Handshake Error:', error);
                 }
             }
         }
 
-        // Register Slash Commands
-        await this.deployCommands(client);
+        console.log(`🚀 ${client.user.tag} is online and authorized.`);
 
-        // Reset the Control Center
-        const embedHandler = new CentralEmbedHandler(client);
-        await embedHandler.resetAllCentralEmbedsOnStartup();
-        
-        console.log(`✅ All systems online.`);
-    },
-
-    async deployCommands(client) {
-        const commands = [];
-        const dir = path.join(__dirname, '..', 'commands', 'slash');
-        
-        if (fs.existsSync(dir)) {
-            const files = fs.readdirSync(dir).filter(f => f.endsWith('.js'));
-            for (const file of files) {
-                const cmd = require(path.join(dir, file));
-                commands.push(cmd.data.toJSON());
-            }
-        }
-
+        // --- SLASH COMMANDS ---
         const rest = new REST({ version: '10' }).setToken(config.discord.token || process.env.TOKEN);
+        const commands = [];
+        const cmdPath = path.join(__dirname, '..', 'commands', 'slash');
+        
+        if (fs.existsSync(cmdPath)) {
+            fs.readdirSync(cmdPath).forEach(f => {
+                const cmd = require(path.join(cmdPath, f));
+                commands.push(cmd.data.toJSON());
+            });
+        }
 
         try {
-            console.log('🔄 Syncing slash commands...');
-            await rest.put(
-                Routes.applicationCommands(client.user.id),
-                { body: commands }
-            );
-            console.log('✅ Slash commands synced.');
-        } catch (err) {
-            console.error('❌ Command sync failure:', err);
-        }
+            await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
+            console.log('✅ Commands Synced');
+        } catch (err) { console.error(err); }
+
+        // --- EMBED SYSTEM ---
+        const embedHandler = new CentralEmbedHandler(client);
+        await embedHandler.resetAllCentralEmbedsOnStartup();
     }
 };
