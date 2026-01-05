@@ -24,7 +24,7 @@ class CentralEmbedHandler {
             const channel = await this.client.channels.fetch(channelId);
             
             const embed = new EmbedBuilder()
-            .setAuthor({ name: 'Ultimate Music Control Center', iconURL: 'https://cdn.discordapp.com/emojis/896724352949706762.gif', url: 'https://discord.gg/xQF9f9yUEM' })
+            .setAuthor({ name: 'Infinity Music Control Center', iconURL: 'https://cdn.discordapp.com/emojis/896724352949706762.gif', url: 'https://discord.gg/AQeXra5CgK' })
                 .setDescription([
                     '',
                     '- Simply type a **song name** or **YouTube link** to start the party!',
@@ -68,7 +68,7 @@ class CentralEmbedHandler {
                 )
                 .setImage('https://i.ibb.co/DDSdKy31/ezgif-8aec7517f2146d.gif')
                 .setFooter({ 
-                    text: 'Ultimate Music Bot • Developed By GlaceYT!',
+                    text: 'Infinity Music Bot • Developed By Rick,Adhidhi!',
                     iconURL: this.client.user.displayAvatarURL()
                 })
                 .setTimestamp();
@@ -151,7 +151,7 @@ class CentralEmbedHandler {
                         `🔊 **Volume:** \`${trackInfo.volume || 50}%\``
                     ].join('\n'))
                     .setColor(embedColor)
-                    .setFooter({ text: `Ultimate Music Bot • ${statusText}`, iconURL: this.client.user.displayAvatarURL() });
+                    .setFooter({ text: `Infinity Music Bot • ${statusText}`, iconURL: this.client.user.displayAvatarURL() });
 
                 if (validThumbnail) embed.setThumbnail(validThumbnail);
                 if (!trackInfo.paused) embed.setImage('https://i.ibb.co/KzbPV8jd/aaa.gif');
@@ -160,7 +160,7 @@ class CentralEmbedHandler {
             } else {
                 // Default embed code...
                 embed = new EmbedBuilder()
-                    .setAuthor({ name: 'Ultimate Music Control Center' })
+                    .setAuthor({ name: 'Infinity Music Control Center' })
                     .setDescription('Simply type a song name to start!')
                     .setColor(0x9966ff)
                     .setImage('https://i.ibb.co/DDSdKy31/ezgif-8aec7517f2146d.gif');
@@ -222,3 +222,4 @@ class CentralEmbedHandler {
 }
 
 module.exports = CentralEmbedHandler;
+
