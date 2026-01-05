@@ -52,14 +52,15 @@ class MusicBot {
         const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
         for (const file of eventFiles) {
             const event = require(`./events/${file}`);
-            // Use the native event names directly
             if (event.once) this.client.once(event.name, (...args) => event.execute(...args, this.client));
             else this.client.on(event.name, (...args) => event.execute(...args, this.client));
         }
 
-        // Voice state listener
+        // Forward voice states to Riffy
         this.client.on('raw', d => {
-            if (['VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'].includes(d.t)) this.client.riffy.updateVoiceState(d);
+            if (['VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'].includes(d.t)) {
+                this.client.riffy.updateVoiceState(d);
+            }
         });
 
         this.client.playerHandler.initializeEvents();
