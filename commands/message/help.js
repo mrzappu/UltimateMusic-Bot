@@ -57,10 +57,10 @@ module.exports = {
             }
 
             const embed = new EmbedBuilder()
-                .setTitle('📖 Ultimate Music Bot - Command List')
+                .setTitle('📖 Infinity Music Bot - Command List')
                 .setColor(0x1DB954)
                 .setDescription(description)
-                .setFooter({ text: 'Developed by GlaceYT | https://glaceyt.com' })
+                .setFooter({ text: 'Developed by Rick,Adhidhi' })
                 .setTimestamp();
 
             await message.reply({ embeds: [embed] });
@@ -71,3 +71,4 @@ module.exports = {
         }
     }
 };
+
