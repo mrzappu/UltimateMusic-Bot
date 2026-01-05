@@ -1,21 +1,22 @@
 {
-  "name": "ultimate-music-bot",
+  "name": "ultimatemusic",
   "version": "1.0.0",
-  "description": "Comprehensive Discord Music Bot",
-  "main": "main.js",
+  "description": "Ultimate Music Bot",
+  "main": "index.js",
   "engines": {
     "node": "20.x"
   },
   "scripts": {
-    "start": "node main.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "discord.js": "^14.15.0",
     "dotenv": "^16.0.0",
+    "express": "^4.18.2",
     "mongoose": "^8.0.0",
     "riffy": "latest",
-    "fs": "0.0.1-security",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "fs": "0.0.1-security"
   }
 }
