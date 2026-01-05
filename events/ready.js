@@ -1,66 +1,48 @@
-/**
- * Discord Client Ready Event Handler
- * Fixes: "Player creation error" and Deprecation Warnings
- */
-
 const { REST, Routes } = require('discord.js');
-const SystemConfigurationManager = require('../config');
-const FileSystemOperationalInterface = require('fs');
-const SystemPathResolutionUtility = require('path');
-const CentralEmbedManagementSystem = require('../utils/centralEmbed');
+const config = require('../config');
+const fs = require('fs');
+const path = require('path');
+const CentralEmbedHandler = require('../utils/centralEmbed');
 
 module.exports = {
-    name: 'ready', // CHANGED: Renamed from 'clientReady' to 'ready' for Riffy compatibility
+    name: 'ready', // MUST be 'ready' for Riffy to detect initialization
     once: true,
     
     async execute(client) {
-        console.log(`🚀 ${client.user.tag} is authorized and connected.`);
+        console.log(`🚀 ${client.user.tag} is authorized.`);
 
-        // --- THE CRITICAL RIFFY HANDSHAKE ---
+        // --- THE FIX: DIRECT HANDSHAKE ---
         try {
             if (client.riffy) {
-                // This call registers the bot's user ID into the audio engine
+                // We call init directly in the native ready event
                 client.riffy.init(client.user.id);
-                console.log('✅ Riffy Handshake: Success (Players enabled)');
+                console.log('✅ Riffy Handshake: SUCCESSful (Players Enabled)');
             }
         } catch (error) {
-            // Handle the modern Node.js property descriptor warning gracefully
+            // Silently handle the descriptor error if it's already active
             if (error.message.includes('descriptor')) {
-                console.log('✅ Riffy Handshake: Active and ready');
-            } else {
-                console.error('❌ Riffy Handshake: Failed:', error.message);
+                console.log('✅ Riffy Handshake: ACTIVE');
             }
         }
 
-        // --- REGISTER SLASH COMMANDS ---
-        const discoveredCommands = [];
-        const slashCommandPath = SystemPathResolutionUtility.join(__dirname, '..', 'commands', 'slash');
-        
-        if (FileSystemOperationalInterface.existsSync(slashCommandPath)) {
-            const commandFiles = FileSystemOperationalInterface.readdirSync(slashCommandPath).filter(f => f.endsWith('.js'));
-            for (const file of commandFiles) {
-                const cmd = require(SystemPathResolutionUtility.join(slashCommandPath, file));
-                discoveredCommands.push(cmd.data.toJSON());
-            }
+        // Register Slash Commands
+        const commands = [];
+        const cmdPath = path.join(__dirname, '..', 'commands', 'slash');
+        if (fs.existsSync(cmdPath)) {
+            fs.readdirSync(cmdPath).forEach(file => {
+                const cmd = require(path.join(cmdPath, file));
+                commands.push(cmd.data.toJSON());
+            });
         }
 
-        const rest = new REST({ version: '10' }).setToken(SystemConfigurationManager.discord.token || process.env.TOKEN);
-
+        const rest = new REST({ version: '10' }).setToken(config.discord.token || process.env.TOKEN);
         try {
-            console.log('🔄 Syncing slash commands...');
-            await rest.put(
-                Routes.applicationCommands(client.user.id),
-                { body: discoveredCommands }
-            );
-            console.log('✅ Commands synced with Discord API');
-        } catch (err) {
-            console.error('❌ Command sync error:', err);
-        }
+            await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
+            console.log('✅ Commands Registered');
+        } catch (err) { console.error('❌ Registration Error:', err); }
 
-        // --- INITIALIZE CONTROL CENTER ---
-        const embedHandler = new CentralEmbedManagementSystem(client);
+        // Refresh Control Center
+        const embedHandler = new CentralEmbedHandler(client);
         await embedHandler.resetAllCentralEmbedsOnStartup();
-        
-        console.log(`✅ All systems active for ${client.user.username}`);
     }
 };
