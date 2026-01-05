@@ -1,8 +1,8 @@
 /**
  * Discord Client Ready Event Handler
  * * @fileoverview 
- * @version 1.0.1
- * @author Rick, Adhidhi
+ * @version 1.0.2
+ * @author GlaceYT
  */
 
 const DiscordRESTClientManager = require('discord.js').REST;
@@ -12,6 +12,9 @@ const FileSystemOperationalInterface = require('fs');
 const SystemPathResolutionUtility = require('path');
 const CentralEmbedManagementSystem = require('../utils/centralEmbed');
 
+/**
+ * Discord Client Ready Event Configuration
+ */
 module.exports = {
     name: 'clientReady',
     once: true,
@@ -22,6 +25,9 @@ module.exports = {
     }
 };
 
+/**
+ * Enterprise Client Initialization Management System
+ */
 class ClientInitializationManager {
     constructor(clientInstance) {
         this.clientRuntimeInstance = clientInstance;
@@ -54,17 +60,21 @@ class ClientInitializationManager {
     }
     
     /**
-     * FIXED: Added error handling for double-initialization to prevent crash
+     * FIXED: Explicitly initializes Riffy with the client ID.
+     * This fixes the "Player creation error" by properly registering the bot with the audio engine.
      */
     async initializeAudioProcessingSubsystem() {
         try {
             if (this.clientRuntimeInstance.riffy) {
+                // Critical: Riffy needs the bot's ID to manage voice states and players
                 this.clientRuntimeInstance.riffy.init(this.clientRuntimeInstance.user.id);
                 this.initializationStatus.audioSystemReady = true;
+                console.log('✅ Riffy audio engine initialized');
             }
         } catch (audioInitializationException) {
+            // Handle cases where modern Node versions conflict with Riffy's property definitions
             if (audioInitializationException.message.includes('Invalid property descriptor')) {
-                // Ignore descriptor error if already initialized
+                console.log('ℹ️ Audio system already active, skipping re-initialization.');
                 this.initializationStatus.audioSystemReady = true;
             } else {
                 console.error('❌ Audio system initialization failed:', audioInitializationException);
@@ -142,6 +152,7 @@ class SlashCommandRegistrationService {
 
     async executeCommandDiscoveryProcedures() {
         const slashCommandDirectoryPath = SystemPathResolutionUtility.join(__dirname, '..', 'commands', 'slash');
+        
         if (FileSystemOperationalInterface.existsSync(slashCommandDirectoryPath)) {
             const discoveredCommandFiles = FileSystemOperationalInterface
                 .readdirSync(slashCommandDirectoryPath)
@@ -159,12 +170,13 @@ class SlashCommandRegistrationService {
             .setToken(SystemConfigurationManager.discord.token || process.env.TOKEN);
         
         console.log('🔄 Started refreshing slash commands...');
+        
         await discordRESTClient.put(
             DiscordApplicationRoutesRegistry.applicationCommands(this.clientRuntimeInstance.user.id),
             { body: this.discoveredCommands }
         );
+        
         this.registrationSuccess = true;
         console.log('✅ Successfully registered slash commands!');
     }
 }
-
