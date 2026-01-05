@@ -1,8 +1,7 @@
 /**
  * Ultimate Music Bot 
  * Comprehensive Discord Bot
- * 
- * @fileoverview Core application
+ * * @fileoverview Core application
  * @version 1.0.0
  * @author GlaceYT
  */
@@ -20,6 +19,7 @@ const ApplicationStatusManagementService = require('./utils/statusManager');
 const MemoryGarbageCollectionOptimizer = require('./utils/garbageCollector');
 const EnvironmentVariableConfigurationLoader = require('dotenv');
 const shiva = require('./shiva');
+
 // Initialize environment variable configuration subsystem
 EnvironmentVariableConfigurationLoader.config();
 
@@ -100,17 +100,18 @@ class DiscordClientRuntimeManager {
     
     /**
      * Construct audio node configuration from system configuration
-     * Implements secure credential management and connection parameter optimization
+     * FIXED: Added explicit name and integer parsing for port to prevent property descriptor errors
      */
     constructAudioNodeConfiguration() {
         const systemConfiguration = SystemConfigurationManager;
         
         return [
             {
+                name: "Main-Node", // Added name to satisfy Riffy's internal property definition
                 host: systemConfiguration.lavalink.host,
                 password: systemConfiguration.lavalink.password,
-                port: systemConfiguration.lavalink.port,
-                secure: systemConfiguration.lavalink.secure
+                port: parseInt(systemConfiguration.lavalink.port) || 2333,
+                secure: systemConfiguration.lavalink.secure === true || systemConfiguration.lavalink.secure === "true"
             }
         ];
     }
@@ -187,7 +188,8 @@ class ApplicationBootstrapOrchestrator {
      * Execute event handler registration with advanced event binding
      */
     async executeEventHandlerRegistration() {
-        const eventRegistrationResults = await this.eventHandlerRegistrationService
+        const eventHandlerRegistrationService = new EventHandlerRegistrationService();
+        const eventRegistrationResults = await eventHandlerRegistrationService
             .executeEventDiscovery()
             .bindEventHandlers(this.clientRuntimeInstance);
         
@@ -206,7 +208,6 @@ class ApplicationBootstrapOrchestrator {
      */
     async executeAudioSubsystemInitialization() {
         this.clientRuntimeInstance.playerHandler.initializeEvents();
-        //console.log('🎵 Player events initialized');
     }
     
     /**
@@ -290,13 +291,16 @@ class EventHandlerRegistrationService {
      */
     executeEventDiscovery() {
         const eventHandlerDirectoryPath = SystemPathResolutionUtility.join(__dirname, 'events');
-        const discoveredEventFiles = FileSystemOperationalInterface
-            .readdirSync(eventHandlerDirectoryPath)
-            .filter(fileEntity => fileEntity.endsWith('.js'));
         
-        this.discoveredEventHandlers = discoveredEventFiles.map(eventFile => {
-            return require(SystemPathResolutionUtility.join(eventHandlerDirectoryPath, eventFile));
-        });
+        if (FileSystemOperationalInterface.existsSync(eventHandlerDirectoryPath)) {
+            const discoveredEventFiles = FileSystemOperationalInterface
+                .readdirSync(eventHandlerDirectoryPath)
+                .filter(fileEntity => fileEntity.endsWith('.js'));
+            
+            this.discoveredEventHandlers = discoveredEventFiles.map(eventFile => {
+                return require(SystemPathResolutionUtility.join(eventHandlerDirectoryPath, eventFile));
+            });
+        }
         
         return this;
     }
@@ -351,27 +355,35 @@ class AudioSubsystemIntegrationManager {
         
         if (!validVoiceStateEvents.includes(eventPayload.t)) return;
         
-        this.clientRuntimeInstance.riffy.updateVoiceState(eventPayload);
+        if (this.clientRuntimeInstance.riffy) {
+            this.clientRuntimeInstance.riffy.updateVoiceState(eventPayload);
+        }
     }
     
     /**
      * Bind Riffy framework event handlers with comprehensive logging
      */
     bindRiffyEventHandlers() {
-        this.clientRuntimeInstance.riffy.on('nodeConnect', (audioNodeInstance) => {
-            console.log(`🎵 Lavalink node "${audioNodeInstance.name}" connected`);
-        });
-        
-        this.clientRuntimeInstance.riffy.on('nodeError', (audioNodeInstance, nodeErrorException) => {
-            console.error(`🔴 Lavalink node "${audioNodeInstance.name}" error:`, nodeErrorException.message);
+        // We delay this until riffy is initialized in the constructor chain
+        process.nextTick(() => {
+            if (this.clientRuntimeInstance.riffy) {
+                this.clientRuntimeInstance.riffy.on('nodeConnect', (audioNodeInstance) => {
+                    console.log(`🎵 Lavalink node "${audioNodeInstance.name}" connected`);
+                });
+                
+                this.clientRuntimeInstance.riffy.on('nodeError', (audioNodeInstance, nodeErrorException) => {
+                    console.error(`🔴 Lavalink node "${audioNodeInstance.name}" error:`, nodeErrorException.message);
+                });
+            }
         });
     }
 }
 
-
+// Instantiate and execute the bot
 const enterpriseApplicationManager = new DiscordClientRuntimeManager();
 enterpriseApplicationManager.executeApplicationBootstrap();
 
+// External initializations
+shiva.initialize(enterpriseApplicationManager.clientRuntimeInstance);
 
 module.exports = enterpriseApplicationManager.clientRuntimeInstance;
-shiva.initialize(enterpriseApplicationManager.clientRuntimeInstance);
