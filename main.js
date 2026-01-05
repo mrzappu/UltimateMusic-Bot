@@ -83,18 +83,19 @@ class DiscordClientRuntimeManager {
     }
     
     /**
-     * FIXED: Added explicit 'name' property and forced Integer for port.
-     * This prevents the "Invalid property descriptor" error in Node 20/22.
+     * FIXED: Added explicit name and integer parsing for port.
+     * This prevents the "Invalid property descriptor" error.
      */
     constructAudioNodeConfiguration() {
-        const config = SystemConfigurationManager;
+        const systemConfiguration = SystemConfigurationManager;
+        
         return [
             {
-                name: "Main-Lavalink-Node", 
-                host: config.lavalink.host,
-                password: config.lavalink.password,
-                port: parseInt(config.lavalink.port),
-                secure: config.lavalink.secure === true || config.lavalink.secure === "true"
+                name: "Primary-Node", 
+                host: systemConfiguration.lavalink.host,
+                password: systemConfiguration.lavalink.password,
+                port: parseInt(systemConfiguration.lavalink.port) || 2333,
+                secure: systemConfiguration.lavalink.secure === true || systemConfiguration.lavalink.secure === "true"
             }
         ];
     }
@@ -113,8 +114,9 @@ class DiscordClientRuntimeManager {
             await this.applicationBootstrapOrchestrator.executeMemoryOptimizationInitialization();
             await this.applicationBootstrapOrchestrator.executeAudioSubsystemInitialization();
             await this.applicationBootstrapOrchestrator.executeClientAuthenticationProcedure();
-        } catch (error) {
-            console.error('❌ Critical Startup Error:', error);
+            
+        } catch (applicationBootstrapException) {
+            console.error('❌ Critical initialization failure:', applicationBootstrapException);
             process.exit(1);
         }
     }
@@ -132,16 +134,13 @@ class ApplicationBootstrapOrchestrator {
     }
     
     async executeCommandDiscoveryAndRegistration() {
-        const discovery = this.commandDiscoveryEngine;
-        discovery.executeMessageCommandDiscovery(this.clientRuntimeInstance);
-        discovery.executeSlashCommandDiscovery(this.clientRuntimeInstance);
-        console.log(`✅ Commands Loaded Successfully`);
+        this.commandDiscoveryEngine.executeMessageCommandDiscovery(this.clientRuntimeInstance);
+        this.commandDiscoveryEngine.executeSlashCommandDiscovery(this.clientRuntimeInstance);
     }
     
     async executeEventHandlerRegistration() {
-        const service = new EventHandlerRegistrationService();
-        service.executeEventDiscovery().bindEventHandlers(this.clientRuntimeInstance);
-        console.log(`✅ Events Loaded Successfully`);
+        const eventService = new EventHandlerRegistrationService();
+        eventService.executeEventDiscovery().bindEventHandlers(this.clientRuntimeInstance);
     }
     
     async executeMemoryOptimizationInitialization() {
@@ -150,7 +149,19 @@ class ApplicationBootstrapOrchestrator {
     
     async executeAudioSubsystemInitialization() {
         this.clientRuntimeInstance.playerHandler.initializeEvents();
-        new AudioSubsystemIntegrationManager(this.clientRuntimeInstance);
+        // Bind Riffy events
+        this.clientRuntimeInstance.on('raw', (d) => {
+            if (!['VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'].includes(d.t)) return;
+            this.clientRuntimeInstance.riffy.updateVoiceState(d);
+        });
+
+        this.clientRuntimeInstance.riffy.on('nodeConnect', (node) => {
+            console.log(`🎵 Lavalink node "${node.name}" connected`);
+        });
+
+        this.clientRuntimeInstance.riffy.on('nodeError', (node, error) => {
+            console.error(`🔴 Lavalink node "${node.name}" error:`, error.message);
+        });
     }
     
     async executeClientAuthenticationProcedure() {
@@ -168,9 +179,7 @@ class CommandDiscoveryEngine {
                 clientInstance.commands.set(cmd.name, cmd);
             });
         }
-        return this;
     }
-    
     executeSlashCommandDiscovery(clientInstance) {
         const dir = SystemPathResolutionUtility.join(__dirname, 'commands', 'slash');
         if (FileSystemOperationalInterface.existsSync(dir)) {
@@ -188,7 +197,6 @@ class EventHandlerRegistrationService {
         this.events = FileSystemOperationalInterface.readdirSync(dir).filter(f => f.endsWith('.js')).map(f => require(SystemPathResolutionUtility.join(dir, f)));
         return this;
     }
-    
     bindEventHandlers(clientInstance) {
         this.events.forEach(e => {
             if (e.once) clientInstance.once(e.name, (...args) => e.execute(...args, clientInstance));
@@ -197,22 +205,8 @@ class EventHandlerRegistrationService {
     }
 }
 
-class AudioSubsystemIntegrationManager {
-    constructor(clientInstance) {
-        this.clientInstance = clientInstance;
-        clientInstance.on('raw', (p) => {
-            if (['VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'].includes(p.t)) {
-                clientInstance.riffy.updateVoiceState(p);
-            }
-        });
-        
-        clientInstance.riffy.on('nodeConnect', (n) => console.log(`🎵 Lavalink node "${n.name}" connected`));
-        clientInstance.riffy.on('nodeError', (n, err) => console.error(`🔴 Lavalink node "${n.name}" error:`, err.message));
-    }
-}
+const enterpriseApplicationManager = new DiscordClientRuntimeManager();
+enterpriseApplicationManager.executeApplicationBootstrap();
 
-const manager = new DiscordClientRuntimeManager();
-manager.executeApplicationBootstrap();
-
-shiva.initialize(manager.clientRuntimeInstance);
-module.exports = manager.clientRuntimeInstance;
+shiva.initialize(enterpriseApplicationManager.clientRuntimeInstance);
+module.exports = enterpriseApplicationManager.clientRuntimeInstance;
