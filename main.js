@@ -63,6 +63,7 @@ class DiscordClientRuntimeManager {
     initializeAudioProcessingInfrastructure() {
         const audioNodeConfigurationRegistry = this.constructAudioNodeConfiguration();
         
+        // Initialize Riffy once here
         this.audioProcessingRuntimeInstance = new RiffyAudioProcessingFramework(
             this.clientRuntimeInstance, 
             audioNodeConfigurationRegistry, 
@@ -83,15 +84,13 @@ class DiscordClientRuntimeManager {
     }
     
     /**
-     * FIXED: Added explicit name and integer parsing for port.
-     * This prevents the "Invalid property descriptor" crash in modern JS engines.
+     * FIXED: Explicit naming to avoid property descriptor errors
      */
     constructAudioNodeConfiguration() {
         const config = SystemConfigurationManager;
-        
         return [
             {
-                name: "Main-Lavalink-Node", 
+                name: "Primary-Node", 
                 host: config.lavalink.host,
                 password: config.lavalink.password,
                 port: parseInt(config.lavalink.port) || 2333,
@@ -114,10 +113,8 @@ class DiscordClientRuntimeManager {
             await this.applicationBootstrapOrchestrator.executeMemoryOptimizationInitialization();
             await this.applicationBootstrapOrchestrator.executeAudioSubsystemInitialization();
             await this.applicationBootstrapOrchestrator.executeClientAuthenticationProcedure();
-            
         } catch (error) {
             console.error('❌ Critical Startup Failure:', error);
-            process.exit(1);
         }
     }
 }
@@ -136,13 +133,11 @@ class ApplicationBootstrapOrchestrator {
     async executeCommandDiscoveryAndRegistration() {
         this.commandDiscoveryEngine.executeMessageCommandDiscovery(this.clientRuntimeInstance);
         this.commandDiscoveryEngine.executeSlashCommandDiscovery(this.clientRuntimeInstance);
-        console.log(`✅ Commands Loaded Successfully`);
     }
     
     async executeEventHandlerRegistration() {
-        const eventService = new EventHandlerRegistrationService();
-        eventService.executeEventDiscovery().bindEventHandlers(this.clientRuntimeInstance);
-        console.log(`✅ Events Loaded Successfully`);
+        const service = new EventHandlerRegistrationService();
+        service.executeEventDiscovery().bindEventHandlers(this.clientRuntimeInstance);
     }
     
     async executeMemoryOptimizationInitialization() {
@@ -152,18 +147,22 @@ class ApplicationBootstrapOrchestrator {
     async executeAudioSubsystemInitialization() {
         this.clientRuntimeInstance.playerHandler.initializeEvents();
         
-        // Listen for raw voice updates for Riffy
+        // Voice State handling
         this.clientRuntimeInstance.on('raw', (d) => {
             if (!['VOICE_STATE_UPDATE', 'VOICE_SERVER_UPDATE'].includes(d.t)) return;
             if (this.clientRuntimeInstance.riffy) this.clientRuntimeInstance.riffy.updateVoiceState(d);
         });
 
-        this.clientRuntimeInstance.riffy.on('nodeConnect', (node) => {
-            console.log(`🎵 Lavalink node "${node.name}" connected`);
-        });
-
-        this.clientRuntimeInstance.riffy.on('nodeError', (node, err) => {
-            console.error(`🔴 Lavalink node "${node.name}" error:`, err.message);
+        // Use process.nextTick to ensure riffy is ready before attaching listeners
+        process.nextTick(() => {
+            if (this.clientRuntimeInstance.riffy) {
+                this.clientRuntimeInstance.riffy.on('nodeConnect', (node) => {
+                    console.log(`🎵 Lavalink node "${node.name}" connected`);
+                });
+                this.clientRuntimeInstance.riffy.on('nodeError', (node, err) => {
+                    console.error(`🔴 Lavalink node "${node.name}" error:`, err.message);
+                });
+            }
         });
     }
     
