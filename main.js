@@ -3,7 +3,7 @@
  * Comprehensive Discord Bot
  * @fileoverview Core application
  * @version 1.0.0
- * @author GlaceYT
+ * @author Rick,Adhidhi
  */
 
 const DiscordClientFramework = require('discord.js').Client;
@@ -212,3 +212,4 @@ enterpriseApplicationManager.executeApplicationBootstrap();
 
 shiva.initialize(enterpriseApplicationManager.clientRuntimeInstance);
 module.exports = enterpriseApplicationManager.clientRuntimeInstance;
+
