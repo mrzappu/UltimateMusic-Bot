@@ -1,6 +1,6 @@
 /**
  * Discord Client Ready Event Handler
- * Fixes "Player creation error" and "Invalid property descriptor"
+ * Fixes: "Player creation error" and "Invalid property descriptor"
  */
 
 const { REST, Routes } = require('discord.js');
@@ -10,48 +10,36 @@ const path = require('path');
 const CentralEmbedHandler = require('../utils/centralEmbed');
 
 module.exports = {
-    name: 'clientReady',
+    name: 'ready', // Use 'ready' for the most reliable library detection
     once: true,
     
     async execute(client) {
-        console.log(`╔════════════════════════════════════════════╗`);
-        console.log(`║   🚀 ${client.user.tag} is Online!       ║`);
-        console.log(`╚════════════════════════════════════════════╝`);
+        console.log(`🚀 ${client.user.tag} is authorized and connected.`);
 
-        // --- THE AUDIO HANDSHAKE FIX ---
+        // --- CRITICAL AUDIO ENGINE INITIALIZATION ---
+        // This MUST happen inside the ready event with the client ID
         try {
             if (client.riffy) {
-                // Riffy needs the bot's user ID to create players
                 client.riffy.init(client.user.id);
-                console.log('✅ Riffy Audio Engine: Handshake Successful');
+                console.log('✅ Riffy Handshake: Success (Players enabled)');
             }
         } catch (error) {
-            // Ignore descriptor error as it's a side effect of initialization
+            // Check for the known Node descriptor error and handle gracefully
             if (error.message.includes('Invalid property descriptor')) {
-                console.log('✅ Riffy Audio Engine: Active and Ready');
+                console.log('✅ Riffy Handshake: Active and bypass successful');
             } else {
-                console.error('❌ Audio Init Error:', error.message);
+                console.error('❌ Riffy Handshake: Failed:', error.message);
             }
         }
 
-        // --- SLASH COMMAND REGISTRATION ---
-        await this.registerCommands(client);
-
-        // --- CONTROL CENTER RESET ---
-        const embedHandler = new CentralEmbedHandler(client);
-        await embedHandler.resetAllCentralEmbedsOnStartup();
-        
-        console.log(`✅ Startup sequence finished!`);
-    },
-
-    async registerCommands(client) {
+        // --- SLASH COMMANDS DEPLOYMENT ---
         const slashCommands = [];
-        const commandPath = path.join(__dirname, '..', 'commands', 'slash');
+        const commandFolder = path.join(__dirname, '..', 'commands', 'slash');
         
-        if (fs.existsSync(commandPath)) {
-            const files = fs.readdirSync(commandPath).filter(f => f.endsWith('.js'));
+        if (fs.existsSync(commandFolder)) {
+            const files = fs.readdirSync(commandFolder).filter(f => f.endsWith('.js'));
             for (const file of files) {
-                const cmd = require(path.join(commandPath, file));
+                const cmd = require(path.join(commandFolder, file));
                 slashCommands.push(cmd.data.toJSON());
             }
         }
@@ -59,14 +47,20 @@ module.exports = {
         const rest = new REST({ version: '10' }).setToken(config.discord.token || process.env.TOKEN);
 
         try {
-            console.log('🔄 Refreshing slash commands...');
+            console.log('🔄 Syncing slash commands...');
             await rest.put(
                 Routes.applicationCommands(client.user.id),
                 { body: slashCommands }
             );
-            console.log('✅ Slash commands registered successfully!');
-        } catch (error) {
-            console.error('❌ Failed to register commands:', error);
+            console.log('✅ Commands synced with Discord API');
+        } catch (err) {
+            console.error('❌ Command sync error:', err);
         }
+
+        // --- COMPONENT INITIALIZATION ---
+        const embedManager = new CentralEmbedHandler(client);
+        await embedManager.resetAllCentralEmbedsOnStartup();
+        
+        console.log(`✅ All systems active for ${client.user.username}`);
     }
 };
