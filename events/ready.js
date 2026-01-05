@@ -2,7 +2,7 @@
  * Discord Client Ready Event Handler
  * * @fileoverview 
  * @version 1.0.1
- * @author GlaceYT
+ * @author Rick, Adhidhi
  */
 
 const DiscordRESTClientManager = require('discord.js').REST;
@@ -167,3 +167,4 @@ class SlashCommandRegistrationService {
         console.log('✅ Successfully registered slash commands!');
     }
 }
+
